@@ -1,9 +1,9 @@
-// src\pages\Onboarding.jsx
+// src/pages/Onboarding.jsx
 import { useState, useRef } from "react";
-import { auth, db, storage } from "../firebase";
+import { auth, db } from "../firebase";
 import { doc, updateDoc } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useNavigate } from "react-router-dom";
+import { uploadImage } from "../utils/uploadImage";
 
 export default function Onboarding() {
   const [step, setStep] = useState(1);
@@ -70,17 +70,16 @@ export default function Onboarding() {
     try {
       let photoURL = "";
 
-      // 1. Upload Selfie if exists
+      // ✅ Upload Selfie using Cloudinary helper
       if (data.selfie) {
-        const storageRef = ref(
-          storage,
-          `user_docs/${auth.currentUser.uid}/selfie`
+        photoURL = await uploadImage(
+          data.selfie,
+          auth.currentUser.uid,
+          "selfie"
         );
-        const snapshot = await uploadBytes(storageRef, data.selfie);
-        photoURL = await getDownloadURL(snapshot.ref);
       }
 
-      // 2. Update Firestore
+      // ✅ Update Firestore
       await updateDoc(doc(db, "users", auth.currentUser.uid), {
         idNumber: data.idNumber,
         county: data.county,
@@ -89,7 +88,7 @@ export default function Onboarding() {
           lat: data.lat,
           lng: data.lng,
         },
-        photoURL: photoURL,
+        photoURL,
         onboardingComplete: true,
         updatedAt: Date.now(),
       });
@@ -106,7 +105,7 @@ export default function Onboarding() {
   // Check if current step is valid
   const isStepValid = () => {
     if (step === 1) return data.idNumber && data.selfie;
-    if (step === 2) return data.county && data.area; // Location coords optional but recommended
+    if (step === 2) return data.county && data.area;
     return true;
   };
 
@@ -127,7 +126,6 @@ export default function Onboarding() {
             </span>
           </div>
 
-          {/* Stepper Bar */}
           <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
             <div
               className="h-full bg-accent transition-all duration-500 ease-out"

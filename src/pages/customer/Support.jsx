@@ -3,113 +3,58 @@ import { useState, useEffect } from "react";
 
 export default function Support() {
   const [animate, setAnimate] = useState(false);
-  const [expandedFaq, setExpandedFaq] = useState(null);
-
-  // Time Logic
-  const now = new Date();
-  const hours = now.getHours();
-  const minutes = now.getMinutes();
-
-  // Logic: Closed if it's after 6:30 PM (18:30) or before 8:00 AM
-  const isClosed = hours > 18 || (hours === 18 && minutes >= 30) || hours < 8;
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
     setAnimate(true);
+    // Update minute tick for the clock display
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+    return () => clearInterval(timer);
   }, []);
 
-  const faqs = [
-    {
-      id: 1,
-      q: "How do I repay my loan?",
-      a: "Go to the Loans tab, select your active loan, and click 'Repay Now'. You can pay via M-Pesa or Card.",
-    },
-    {
-      id: 2,
-      q: "Why was my application rejected?",
-      a: "Rejections are often due to low credit scores, incorrect ID details, or an existing overdue loan.",
-    },
-    {
-      id: 3,
-      q: "How do I increase my limit?",
-      a: "Repay your loans on time. We review limits automatically after every successful repayment.",
-    },
-  ];
-
-  const toggleFaq = (id) => {
-    setExpandedFaq(expandedFaq === id ? null : id);
-  };
+  // Time Logic
+  const hours = currentTime.getHours();
+  const minutes = currentTime.getMinutes();
+  // Closed if > 6:30 PM (18:30) or < 8:00 AM
+  const isClosed = hours > 18 || (hours === 18 && minutes >= 30) || hours < 8;
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-28 space-y-6">
-      {/* 1. Header with Status Banner */}
-      <div
-        className={`
-          bg-primary pt-8 pb-12 rounded-b-[2.5rem] shadow-xl relative overflow-hidden px-6
-          transform transition-all duration-700 ease-out
-          ${animate ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0"}
-        `}
-      >
-        {/* Background Shapes */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
-        <div className="absolute bottom-0 left-0 w-32 h-32 bg-accent/10 rounded-full blur-2xl"></div>
-
-        <div className="relative z-10 text-center">
-          <h1 className="text-2xl font-bold text-white mb-1">Help & Support</h1>
-          <p className="text-slate-400 text-sm mb-6">We are here to help you</p>
-
-          {/* Operational Status Pill */}
-          <div
-            className={`
-                inline-flex items-center gap-2 px-4 py-2 rounded-full border backdrop-blur-md
-                ${
-                  isClosed
-                    ? "bg-red-500/10 border-red-500/30 text-red-200"
-                    : "bg-green-500/10 border-green-500/30 text-green-200"
-                }
-            `}
-          >
-            <span
-              className={`flex h-2 w-2 rounded-full ${
-                isClosed ? "bg-red-500" : "bg-green-400 animate-pulse"
-              }`}
-            ></span>
-            <span className="text-xs font-semibold tracking-wide">
-              {isClosed ? "Call Center Closed" : "Support Agents Online"}
-            </span>
-          </div>
-
-          <p className="text-xs text-slate-500 mt-2">
-            Mon - Sun, 8:00 AM - 6:30 PM
+    <div className="min-h-screen bg-[#FAFAFA] text-slate-900 pb-32">
+      {/* 1. Navbar / Top Area */}
+      <div className="px-6 pt-12 pb-6 flex justify-between items-end">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
+            Support
+          </h1>
+          <p className="text-slate-500 text-sm font-medium mt-1">
+            We're here to help you.
           </p>
+        </div>
+        {/* Agent Facepile */}
+        <div className="flex items-center -space-x-3">
+          <div className="w-10 h-10 rounded-full border-2 border-[#FAFAFA] bg-slate-200 overflow-hidden">
+            <img src="https://i.pravatar.cc/100?img=33" alt="Agent" />
+          </div>
+          <div className="w-10 h-10 rounded-full border-2 border-[#FAFAFA] bg-slate-200 overflow-hidden">
+            <img src="https://i.pravatar.cc/100?img=47" alt="Agent" />
+          </div>
+          <div className="w-10 h-10 rounded-full border-2 border-[#FAFAFA] bg-green-500 text-white flex items-center justify-center text-xs font-bold">
+            <div className="w-2.5 h-2.5 bg-white rounded-full animate-pulse"></div>
+          </div>
         </div>
       </div>
 
-      <div className="px-6 -mt-6 space-y-6">
-        {/* 2. Contact Channels Grid */}
-        <div className="grid gap-3">
-          {/* WhatsApp - Primary Channel */}
-          <button
-            className={`
-                    group relative bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center gap-4 transition-all duration-300 hover:shadow-md hover:border-green-200
-                    transform ${
-                      animate
-                        ? "translate-y-0 opacity-100"
-                        : "translate-y-8 opacity-0"
-                    }
-                `}
-            style={{ transitionDelay: "100ms" }}
-          >
-            <div className="w-12 h-12 rounded-full bg-[#25D366]/10 flex items-center justify-center text-[#25D366] group-hover:bg-[#25D366] group-hover:text-white transition-colors">
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
-              </svg>
-            </div>
-            <div className="flex-1 text-left">
-              <h3 className="font-bold text-primary">Chat on WhatsApp</h3>
-              <p className="text-xs text-muted">Instant responses</p>
-            </div>
+      <div
+        className={`px-6 space-y-6 transition-all duration-700 ${
+          animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+        }`}
+      >
+        {/* 2. Search Bar (Self Service Focus) */}
+        <div className="relative group">
+          <div className="absolute inset-0 bg-blue-500/5 rounded-2xl blur-xl group-hover:bg-blue-500/10 transition-colors"></div>
+          <div className="relative bg-white rounded-2xl shadow-sm border border-slate-200 flex items-center p-4 transition-all focus-within:ring-2 focus-within:ring-slate-900/5">
             <svg
-              className="w-5 h-5 text-slate-300"
+              className="w-6 h-6 text-slate-400 mr-3"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -118,26 +63,46 @@ export default function Support() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M9 5l7 7-7 7"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
               />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search for answers (e.g. 'Repayment')"
+              className="w-full bg-transparent outline-none text-slate-800 placeholder-slate-400 font-medium"
+            />
+          </div>
+        </div>
+
+        {/* 3. The "Bento" Contact Grid */}
+        <div className="grid grid-cols-2 gap-4">
+          {/* Main Card: WhatsApp (Occupies full width on mobile if you want, or large spot) */}
+          <button className="col-span-2 bg-[#25D366] hover:bg-[#22bf5b] rounded-[2rem] p-6 text-white shadow-lg shadow-green-500/20 transition-transform active:scale-[0.98] flex items-center justify-between relative overflow-hidden">
+            <div className="relative z-10 text-left">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="bg-white/20 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide">
+                  Fastest
+                </span>
+              </div>
+              <h3 className="text-xl font-bold">WhatsApp Chat</h3>
+              <p className="text-white/80 text-sm mt-1">
+                Start a conversation now
+              </p>
+            </div>
+            <svg
+              className="w-16 h-16 text-white/20 absolute -right-2 -bottom-2 rotate-12"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
             </svg>
           </button>
 
-          {/* Email Support */}
-          <button
-            className={`
-                    group relative bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center gap-4 transition-all duration-300 hover:shadow-md hover:border-blue-200
-                    transform ${
-                      animate
-                        ? "translate-y-0 opacity-100"
-                        : "translate-y-8 opacity-0"
-                    }
-                `}
-            style={{ transitionDelay: "200ms" }}
-          >
-            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+          {/* Email Card */}
+          <button className="bg-white rounded-[2rem] p-5 shadow-sm border border-slate-100 flex flex-col items-start justify-between h-40 hover:border-slate-300 transition-colors">
+            <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center">
               <svg
-                className="w-6 h-6"
+                className="w-5 h-5"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -150,55 +115,103 @@ export default function Support() {
                 />
               </svg>
             </div>
-            <div className="flex-1 text-left">
-              <h3 className="font-bold text-primary">Send an Email</h3>
-              <p className="text-xs text-muted">Get a reply in 24h</p>
+            <div className="text-left">
+              <h4 className="font-bold text-slate-800">Email Us</h4>
+              <p className="text-xs text-slate-400 mt-1">
+                For documents & inquiries
+              </p>
             </div>
-            <svg
-              className="w-5 h-5 text-slate-300"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
           </button>
 
-          {/* Phone Call (Conditional) */}
+          {/* Call Card - Adapts to time */}
           <button
             disabled={isClosed}
             className={`
-                    group relative rounded-2xl p-4 flex items-center gap-4 transition-all duration-300
-                    transform ${
-                      animate
-                        ? "translate-y-0 opacity-100"
-                        : "translate-y-8 opacity-0"
-                    }
+                    rounded-[2rem] p-5 shadow-sm border flex flex-col items-start justify-between h-40 transition-colors
                     ${
                       isClosed
-                        ? "bg-slate-100 border border-slate-200 cursor-not-allowed opacity-70"
-                        : "bg-gradient-to-r from-primary to-slate-800 text-white shadow-lg shadow-primary/20 hover:scale-[1.02]"
+                        ? "bg-slate-100 border-slate-200 text-slate-400"
+                        : "bg-white border-slate-100 text-slate-800 hover:border-slate-300"
                     }
                 `}
-            style={{ transitionDelay: "300ms" }}
           >
+            <div className="flex justify-between w-full">
+              <div
+                className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  isClosed ? "bg-slate-200" : "bg-slate-900 text-white"
+                }`}
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                  />
+                </svg>
+              </div>
+              {isClosed && (
+                <div className="px-2 py-1 bg-red-100 text-red-600 text-[10px] font-bold rounded-md uppercase">
+                  Closed
+                </div>
+              )}
+            </div>
+            <div className="text-left">
+              <h4 className="font-bold">Call Center</h4>
+              <p className="text-xs opacity-70 mt-1">
+                {isClosed ? `Opens 8:00 AM` : "Available Now"}
+              </p>
+            </div>
+          </button>
+        </div>
+
+        {/* 4. Quick Help Topics (Pill Grid) */}
+        <div>
+          <h3 className="text-sm font-bold text-slate-900 mb-3">
+            Common Topics
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {[
+              "Repayment Failed",
+              "Change Pin",
+              "Increase Limit",
+              "Loan Status",
+              "Referrals",
+            ].map((topic) => (
+              <button
+                key={topic}
+                className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all"
+              >
+                {topic}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 5. Clean FAQ Accordion */}
+        <div className="bg-white rounded-[1.5rem] border border-slate-200 shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-slate-100 bg-slate-50/50">
+            <h3 className="font-bold text-slate-800">Top Questions</h3>
+          </div>
+          {[
+            "How long does disbursement take?",
+            "Can I pay via M-Pesa Express?",
+            "What are the interest rates?",
+          ].map((q, i) => (
             <div
-              className={`
-                    w-12 h-12 rounded-full flex items-center justify-center transition-colors
-                    ${
-                      isClosed
-                        ? "bg-slate-200 text-slate-400"
-                        : "bg-white/20 text-white"
-                    }
-                `}
+              key={i}
+              className="group p-4 border-b border-slate-100 last:border-0 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition-colors"
             >
+              <span className="text-sm font-medium text-slate-600 group-hover:text-slate-900">
+                {q}
+              </span>
               <svg
-                className="w-6 h-6"
+                className="w-4 h-4 text-slate-300 group-hover:text-slate-500"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -207,106 +220,15 @@ export default function Support() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                  d="M9 5l7 7-7 7"
                 />
               </svg>
             </div>
-            <div className="flex-1 text-left">
-              <h3
-                className={`font-bold ${
-                  isClosed ? "text-slate-500" : "text-white"
-                }`}
-              >
-                Call Us Now
-              </h3>
-              <p
-                className={`text-xs ${
-                  isClosed ? "text-slate-400" : "text-slate-300"
-                }`}
-              >
-                {isClosed ? "Currently Closed" : "+254 700 000 000"}
-              </p>
-            </div>
-          </button>
-        </div>
-
-        {/* 3. FAQ Section */}
-        <div
-          className={`
-                space-y-4 pt-4
-                transform transition-all duration-700 delay-500 ease-out
-                ${
-                  animate
-                    ? "translate-y-0 opacity-100"
-                    : "translate-y-10 opacity-0"
-                }
-            `}
-        >
-          <h2 className="text-lg font-bold text-primary pl-1">
-            Frequently Asked
-          </h2>
-
-          <div className="space-y-3">
-            {faqs.map((item) => (
-              <div
-                key={item.id}
-                className="bg-white rounded-xl border border-slate-100 overflow-hidden transition-all duration-300 hover:shadow-sm"
-              >
-                <button
-                  onClick={() => toggleFaq(item.id)}
-                  className="w-full flex justify-between items-center p-4 text-left"
-                >
-                  <span className="font-semibold text-sm text-primary">
-                    {item.q}
-                  </span>
-                  <div
-                    className={`
-                                w-6 h-6 rounded-full bg-slate-50 flex items-center justify-center transition-transform duration-300
-                                ${
-                                  expandedFaq === item.id
-                                    ? "rotate-180 bg-accent/20 text-accent"
-                                    : "text-slate-400"
-                                }
-                            `}
-                  >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </div>
-                </button>
-                <div
-                  className={`
-                                bg-slate-50 text-slate-600 text-sm leading-relaxed overflow-hidden transition-all duration-300 ease-in-out
-                                ${
-                                  expandedFaq === item.id
-                                    ? "max-h-40 p-4 pt-0 border-t border-slate-100"
-                                    : "max-h-0"
-                                }
-                            `}
-                >
-                  <div className="pt-2">{item.a}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Footer Info */}
-        <div className="text-center text-xs text-slate-400 pt-8 pb-4">
-          <p>App Version 1.0.2</p>
-          <div className="flex justify-center gap-4 mt-2">
-            <span className="underline">Privacy Policy</span>
-            <span className="underline">Terms of Service</span>
+          ))}
+          <div className="p-4 text-center">
+            <button className="text-sm font-bold text-blue-600 hover:underline">
+              View Help Center
+            </button>
           </div>
         </div>
       </div>

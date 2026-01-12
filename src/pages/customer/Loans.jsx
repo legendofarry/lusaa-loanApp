@@ -3,20 +3,22 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function Loans() {
-  const [activeTab, setActiveTab] = useState("active"); // 'active' | 'history'
-  const [animate, setAnimate] = useState(false);
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("active");
+  const [animate, setAnimate] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Mock Data (Replace with Firestore data later)
+  // Mock Data
   const loans = [
     {
       id: "LN-8832",
       amount: 30000,
       balance: 12500,
-      status: "ACTIVE", // ACTIVE, OVERDUE, PAID
+      status: "ACTIVE",
       dueDate: "30 Mar 2026",
       issuedDate: "01 Mar 2026",
       type: "Personal Loan",
+      interest: "12%",
     },
     {
       id: "LN-4421",
@@ -26,6 +28,7 @@ export default function Loans() {
       dueDate: "15 Feb 2026",
       issuedDate: "15 Jan 2026",
       type: "Emergency Loan",
+      interest: "15%",
     },
     {
       id: "LN-1029",
@@ -35,287 +38,313 @@ export default function Loans() {
       dueDate: "10 Dec 2025",
       issuedDate: "01 Dec 2025",
       type: "Airtime Advance",
+      interest: "5%",
     },
   ];
+
+  // Calculations
+  const totalDebt = loans
+    .filter((l) => l.status !== "PAID")
+    .reduce((acc, curr) => acc + curr.balance, 0);
 
   useEffect(() => {
     setAnimate(true);
   }, []);
 
-  // Filter loans based on tab
+  // Filter Logic
   const filteredLoans = loans.filter((loan) => {
-    if (activeTab === "active")
-      return loan.status === "ACTIVE" || loan.status === "OVERDUE";
-    if (activeTab === "history") return loan.status === "PAID";
-    return true;
+    const matchesTab =
+      activeTab === "active"
+        ? loan.status === "ACTIVE" || loan.status === "OVERDUE"
+        : loan.status === "PAID";
+
+    const matchesSearch =
+      loan.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      loan.id.toLowerCase().includes(searchQuery.toLowerCase());
+
+    return matchesTab && matchesSearch;
   });
 
-  // Helper for Status Styles
-  const getStatusStyle = (status) => {
-    switch (status) {
-      case "ACTIVE":
-        return "bg-blue-100 text-blue-700 border-blue-200";
-      case "OVERDUE":
-        return "bg-red-100 text-red-700 border-red-200 animate-pulse";
-      case "PAID":
-        return "bg-green-100 text-green-700 border-green-200";
-      default:
-        return "bg-slate-100 text-slate-700";
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-slate-50 p-6 pb-24 space-y-6">
-      {/* 1. Header & Actions */}
-      <div
-        className={`
-          flex justify-between items-end
-          transform transition-all duration-700 ease-out
-          ${animate ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0"}
-        `}
-      >
-        <div>
-          <h1 className="text-2xl font-bold text-primary">My Loans</h1>
-          <p className="text-sm text-muted">Manage your repayment schedule</p>
+    <div className="min-h-screen bg-[#F8FAFC] pb-28">
+      {/* 1. Header & Portfolio Summary */}
+      <div className="bg-white px-6 pt-12 pb-6 rounded-b-[2rem] shadow-sm mb-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+            My Portfolio
+          </h1>
+          <button className="p-2 bg-slate-50 text-slate-600 rounded-full hover:bg-slate-100 transition-colors">
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+          </button>
         </div>
 
-        <button className="w-10 h-10 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center text-primary hover:bg-slate-50 transition-colors">
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-            />
-          </svg>
-        </button>
-      </div>
+        {/* Debt Summary Card */}
+        <div className="bg-slate-900 text-white p-6 rounded-3xl relative overflow-hidden shadow-xl shadow-slate-900/10">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
 
-      {/* 2. Custom Tabs */}
-      <div
-        className={`
-          bg-white p-1 rounded-xl shadow-sm border border-slate-100 flex
-          transform transition-all duration-700 delay-100 ease-out
-          ${animate ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}
-        `}
-      >
-        <button
-          onClick={() => setActiveTab("active")}
-          className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300 ${
-            activeTab === "active"
-              ? "bg-primary text-white shadow-md"
-              : "text-muted hover:bg-slate-50"
-          }`}
-        >
-          Active Loans
-        </button>
-        <button
-          onClick={() => setActiveTab("history")}
-          className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300 ${
-            activeTab === "history"
-              ? "bg-primary text-white shadow-md"
-              : "text-muted hover:bg-slate-50"
-          }`}
-        >
-          History
-        </button>
-      </div>
+          <p className="text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">
+            Total Outstanding Balance
+          </p>
+          <h2 className="text-3xl font-bold mb-4">
+            KSH {totalDebt.toLocaleString()}
+          </h2>
 
-      {/* 3. Loan Cards List */}
-      <div className="space-y-4">
-        {filteredLoans.length > 0 ? (
-          filteredLoans.map((loan, index) => (
-            <div
-              key={loan.id}
-              className={`
-                group bg-white rounded-2xl p-5 shadow-sm border border-slate-100 hover:shadow-md transition-all duration-300
-                transform ${
-                  animate
-                    ? "translate-y-0 opacity-100"
-                    : "translate-y-10 opacity-0"
-                }
-              `}
-              style={{ transitionDelay: `${index * 100 + 200}ms` }}
+          <div className="flex gap-4">
+            <button
+              onClick={() => navigate("/app/apply")}
+              className="flex-1 bg-white text-slate-900 py-3 rounded-xl text-sm font-bold hover:bg-slate-100 transition-colors"
             >
-              {/* Card Header */}
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      loan.status === "OVERDUE"
-                        ? "bg-red-50 text-red-600"
-                        : "bg-blue-50 text-blue-600"
-                    }`}
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-primary text-sm">
-                      {loan.type}
-                    </h3>
-                    <p className="text-xs text-muted">ID: {loan.id}</p>
-                  </div>
-                </div>
-                <span
-                  className={`px-2.5 py-1 rounded-full text-xs font-bold border ${getStatusStyle(
-                    loan.status
-                  )}`}
-                >
-                  {loan.status}
-                </span>
-              </div>
+              Top Up
+            </button>
+            <button className="flex-1 bg-white/10 text-white py-3 rounded-xl text-sm font-bold hover:bg-white/20 transition-colors backdrop-blur-sm">
+              Pay All
+            </button>
+          </div>
+        </div>
+      </div>
 
-              {/* Card Body */}
-              <div className="flex justify-between items-baseline mb-2">
-                <span className="text-xs text-muted uppercase tracking-wider font-semibold">
-                  Total Amount
-                </span>
-                <span className="text-xl font-bold text-primary">
-                  KSH {loan.amount.toLocaleString()}
-                </span>
-              </div>
+      <div
+        className={`px-6 space-y-6 transition-all duration-700 ${
+          animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+        }`}
+      >
+        {/* 2. Controls: Tabs & Search */}
+        <div className="space-y-4">
+          {/* Segmented Tabs */}
+          <div className="bg-slate-200/50 p-1 rounded-2xl flex relative">
+            <button
+              onClick={() => setActiveTab("active")}
+              className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 relative z-10 ${
+                activeTab === "active"
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              Active
+            </button>
+            <button
+              onClick={() => setActiveTab("history")}
+              className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition-all duration-300 relative z-10 ${
+                activeTab === "history"
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              History
+            </button>
+          </div>
 
-              {/* Progress Bar (Only for active/overdue) */}
-              {loan.status !== "PAID" && (
-                <div className="space-y-2 mb-4">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">
-                      Paid:{" "}
-                      <span className="text-accent font-semibold">
-                        KSH {(loan.amount - loan.balance).toLocaleString()}
-                      </span>
-                    </span>
-                    <span className="text-slate-500">
-                      Balance:{" "}
-                      <span className="text-danger font-semibold">
-                        KSH {loan.balance.toLocaleString()}
-                      </span>
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+          {/* Search Bar */}
+          <div className="relative">
+            <svg
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search loans by ID or type..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-white border border-slate-200 rounded-2xl py-3 pl-12 pr-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/5 transition-shadow"
+            />
+          </div>
+        </div>
+
+        {/* 3. Loan Cards */}
+        <div className="space-y-4">
+          {filteredLoans.length > 0 ? (
+            filteredLoans.map((loan, i) => (
+              <div
+                key={loan.id}
+                className="bg-white rounded-[1.5rem] p-5 border border-slate-100 shadow-sm active:scale-[0.99] transition-transform"
+              >
+                {/* Card Header */}
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-3">
                     <div
-                      className={`h-full rounded-full transition-all duration-1000 ${
-                        loan.status === "OVERDUE" ? "bg-red-500" : "bg-accent"
+                      className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                        loan.status === "OVERDUE"
+                          ? "bg-red-50 text-red-500"
+                          : "bg-blue-50 text-blue-600"
                       }`}
-                      style={{
-                        width: `${
-                          ((loan.amount - loan.balance) / loan.amount) * 100
-                        }%`,
-                      }}
-                    ></div>
-                  </div>
-                </div>
-              )}
-
-              {/* Card Footer */}
-              <div className="pt-4 border-t border-slate-50 flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted">Due Date</p>
-                  <p className="text-sm font-semibold text-primary">
-                    {loan.dueDate}
-                  </p>
-                </div>
-
-                {loan.status !== "PAID" ? (
-                  <button
-                    className="bg-primary text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors shadow-lg shadow-blue-500/20 active:scale-95"
-                    onClick={() => console.log(`Repay ${loan.id}`)}
-                  >
-                    Repay Now
-                  </button>
-                ) : (
-                  <div className="flex items-center text-green-600 text-xs font-bold">
-                    <svg
-                      className="w-4 h-4 mr-1"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    Completed
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M13 10V3L4 14h7v7l9-11h-7z"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-slate-800">{loan.type}</h3>
+                      <p className="text-xs text-slate-400 font-mono">
+                        {loan.id}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Status Badge */}
+                  <span
+                    className={`
+                         px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide
+                         ${
+                           loan.status === "ACTIVE"
+                             ? "bg-blue-50 text-blue-600 border border-blue-100"
+                             : ""
+                         }
+                         ${
+                           loan.status === "OVERDUE"
+                             ? "bg-red-50 text-red-600 border border-red-100 animate-pulse"
+                             : ""
+                         }
+                         ${
+                           loan.status === "PAID"
+                             ? "bg-green-50 text-green-600 border border-green-100"
+                             : ""
+                         }
+                      `}
+                  >
+                    {loan.status}
+                  </span>
+                </div>
+
+                {/* Amount Display */}
+                <div className="flex items-baseline gap-1 mb-4">
+                  <span className="text-2xl font-extrabold text-slate-900">
+                    KSH {loan.amount.toLocaleString()}
+                  </span>
+                  <span className="text-xs text-slate-400 font-medium">
+                    @ {loan.interest} interest
+                  </span>
+                </div>
+
+                {/* Progress Bar (Only active) */}
+                {loan.status !== "PAID" && (
+                  <div className="mb-5">
+                    <div className="flex justify-between text-xs font-medium mb-1.5">
+                      <span className="text-slate-500">
+                        Repaid:{" "}
+                        <span className="text-slate-900">
+                          {(loan.amount - loan.balance).toLocaleString()}
+                        </span>
+                      </span>
+                      <span className="text-slate-500">
+                        Left:{" "}
+                        <span className="text-red-500">
+                          {loan.balance.toLocaleString()}
+                        </span>
+                      </span>
+                    </div>
+                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${
+                          loan.status === "OVERDUE"
+                            ? "bg-red-500"
+                            : "bg-slate-900"
+                        }`}
+                        style={{
+                          width: `${
+                            ((loan.amount - loan.balance) / loan.amount) * 100
+                          }%`,
+                        }}
+                      ></div>
+                    </div>
                   </div>
                 )}
-              </div>
-            </div>
-          ))
-        ) : (
-          /* Empty State */
-          <div className="flex flex-col items-center justify-center py-12 text-center space-y-4 animate-fadeIn">
-            <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-2">
-              <svg
-                className="w-10 h-10 text-slate-300"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-                />
-              </svg>
-            </div>
-            <h3 className="text-lg font-bold text-primary">
-              No {activeTab} loans
-            </h3>
-            <p className="text-sm text-muted max-w-xs mx-auto">
-              {activeTab === "active"
-                ? "You don't have any active loans at the moment. You are debt free!"
-                : "You haven't completed any loans yet."}
-            </p>
-            {activeTab === "active" && (
-              <button
-                onClick={() => navigate("/app/home")}
-                className="mt-4 text-accent font-bold text-sm hover:underline"
-              >
-                Apply for a new loan
-              </button>
-            )}
-          </div>
-        )}
-      </div>
 
-      {/* Floating Action Button (Optional for Mobile) */}
-      <div className="fixed bottom-24 right-6 md:hidden">
-        <button className="w-14 h-14 bg-accent text-white rounded-full shadow-xl shadow-green-500/30 flex items-center justify-center hover:scale-110 transition-transform active:scale-90">
-          <svg
-            className="w-8 h-8"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-        </button>
+                {/* Footer Actions */}
+                <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+                  <div>
+                    <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
+                      Due Date
+                    </p>
+                    <p className="text-sm font-bold text-slate-700">
+                      {loan.dueDate}
+                    </p>
+                  </div>
+
+                  {loan.status !== "PAID" ? (
+                    <button className="bg-slate-900 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-slate-900/20 active:scale-95 transition-transform">
+                      Repay Now
+                    </button>
+                  ) : (
+                    <button className="text-slate-400 flex items-center gap-1 text-xs font-bold px-3 py-2 bg-slate-50 rounded-lg">
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                        />
+                      </svg>
+                      Receipt
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))
+          ) : (
+            // Empty State
+            <div className="flex flex-col items-center justify-center py-10 text-center">
+              <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                <svg
+                  className="w-8 h-8 text-slate-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-slate-900 font-bold text-lg">
+                No Loans Found
+              </h3>
+              <p className="text-slate-500 text-sm max-w-[200px] mt-1">
+                {searchQuery
+                  ? "Try searching for a different keyword."
+                  : "You have no records in this category."}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
